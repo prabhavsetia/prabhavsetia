@@ -6,7 +6,7 @@ I'm a 22-year-old developer based in India, passionate about continuous learning
 - Follow my journey as I create my own portfolio website from scratch, sharing my progress and insights along the way.
 - Striving to become a proficient full-stack developer while documenting my journey and growth along the way.
 
-**Frontend Languages:** `HTML` `CSS` `JavaScript` 
+**Frontend Development:** `HTML` `CSS` `JavaScript` 
 
 **Version Control:** `Git` `Bitbucket`
 
