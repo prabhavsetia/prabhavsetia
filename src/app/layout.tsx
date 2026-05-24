@@ -16,11 +16,11 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Prabhav Setia — Software Engineer",
+  title: "Prabhav Setia",
   description:
     "Software Engineer specializing in full-stack development and AI-driven automation. Building enterprise systems that work smarter.",
   openGraph: {
-    title: "Prabhav Setia — Software Engineer",
+    title: "Prabhav Setia",
     description:
       "Software Engineer specializing in full-stack development and AI-driven automation.",
     type: "website",
