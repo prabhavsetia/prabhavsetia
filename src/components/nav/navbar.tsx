@@ -38,7 +38,7 @@ export default function Navbar() {
         {personalInfo.initials}<span className="text-accent">.</span>
       </div>
 
-      <ul className="hidden md:flex gap-8 list-none">
+      <ul className="hidden md:flex gap-8 list-none items-center">
         {navLinks.map((link) => (
           <li key={link.href}>
             <a
@@ -49,6 +49,11 @@ export default function Navbar() {
             </a>
           </li>
         ))}
+        <li>
+          <a href="/resume.pdf" download className="btn-secondary" style={{ padding: "8px 20px", fontSize: 13 }}>
+            Resume ↓
+          </a>
+        </li>
       </ul>
 
       <button
@@ -71,6 +76,11 @@ export default function Navbar() {
                 </a>
               </li>
             ))}
+            <li>
+              <a href="/resume.pdf" download className="text-accent text-lg font-medium" onClick={() => setMenuOpen(false)}>
+                Resume ↓
+              </a>
+            </li>
           </ul>
         </div>
       )}

@@ -7,6 +7,7 @@ import Skills from "@/components/skills/skills";
 import Contact from "@/components/contact/contact";
 import CustomCursor from "@/components/ui/custom-cursor";
 import ScrollProgress from "@/components/ui/scroll-progress";
+import ChatButton from "@/components/chat/chat-button";
 
 export default function Home() {
   return (
@@ -22,6 +23,7 @@ export default function Home() {
         <Skills />
         <Contact />
       </main>
+      <ChatButton />
     </>
   );
 }

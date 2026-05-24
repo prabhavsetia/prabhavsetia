@@ -38,18 +38,16 @@ export default function CustomCursor() {
 
     let raf: number;
     const animate = () => {
-      cursor.current.x += (mouse.current.x - cursor.current.x) * 0.15;
-      cursor.current.y += (mouse.current.y - cursor.current.y) * 0.15;
-      trail.current.x += (mouse.current.x - trail.current.x) * 0.08;
-      trail.current.y += (mouse.current.y - trail.current.y) * 0.08;
+      cursor.current.x += (mouse.current.x - cursor.current.x) * 0.25;
+      cursor.current.y += (mouse.current.y - cursor.current.y) * 0.25;
+      trail.current.x += (mouse.current.x - trail.current.x) * 0.12;
+      trail.current.y += (mouse.current.y - trail.current.y) * 0.12;
 
       if (cursorRef.current) {
-        cursorRef.current.style.left = `${cursor.current.x}px`;
-        cursorRef.current.style.top = `${cursor.current.y}px`;
+        cursorRef.current.style.transform = `translate3d(${cursor.current.x}px, ${cursor.current.y}px, 0) translate(-50%, -50%)`;
       }
       if (trailRef.current) {
-        trailRef.current.style.left = `${trail.current.x}px`;
-        trailRef.current.style.top = `${trail.current.y}px`;
+        trailRef.current.style.transform = `translate3d(${trail.current.x}px, ${trail.current.y}px, 0) translate(-50%, -50%)`;
       }
       raf = requestAnimationFrame(animate);
     };
@@ -71,7 +69,7 @@ export default function CustomCursor() {
     <>
       <div
         ref={cursorRef}
-        className="fixed z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2 mix-blend-exclusion hidden md:block"
+        className="fixed top-0 left-0 z-[9999] pointer-events-none hidden md:block will-change-transform"
         style={{
           width: hovering ? 48 : 16,
           height: hovering ? 48 : 16,
@@ -84,7 +82,7 @@ export default function CustomCursor() {
       />
       <div
         ref={trailRef}
-        className="fixed z-[9998] pointer-events-none -translate-x-1/2 -translate-y-1/2 hidden md:block"
+        className="fixed top-0 left-0 z-[9998] pointer-events-none hidden md:block will-change-transform"
         style={{
           width: 6,
           height: 6,

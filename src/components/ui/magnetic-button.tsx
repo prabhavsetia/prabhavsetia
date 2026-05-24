@@ -6,12 +6,16 @@ export default function MagneticButton({
   children,
   className = "",
   onClick,
+  href,
+  download,
 }: {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
+  href?: string;
+  download?: boolean | string;
 }) {
-  const ref = useRef<HTMLButtonElement>(null);
+  const ref = useRef<HTMLElement>(null);
 
   const onMouseMove = (e: React.MouseEvent) => {
     const el = ref.current;
@@ -30,9 +34,25 @@ export default function MagneticButton({
     el.style.transition = "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
   };
 
+  if (href) {
+    return (
+      <a
+        ref={ref as React.RefObject<HTMLAnchorElement>}
+        href={href}
+        download={download}
+        className={className}
+        onMouseMove={onMouseMove}
+        onMouseLeave={onMouseLeave}
+        style={{ display: "inline-block" }}
+      >
+        {children}
+      </a>
+    );
+  }
+
   return (
     <button
-      ref={ref}
+      ref={ref as React.RefObject<HTMLButtonElement>}
       className={className}
       onClick={onClick}
       onMouseMove={onMouseMove}
