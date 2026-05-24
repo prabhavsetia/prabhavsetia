@@ -990,11 +990,34 @@ body::after {
     max-height: 70vh;
   }
   .chat-fab {
-    bottom: 20px;
-    right: 20px;
+    bottom: 16px;
+    right: 16px;
+    width: 70px;
+    height: 70px;
     cursor: auto;
   }
   .chat-close, .chat-send, .chat-starter-btn {
     cursor: auto;
+  }
+  .chat-label {
+    bottom: 60px !important;
+    right: 10px !important;
+  }
+  .chat-label-text {
+    font-size: 11px;
+    padding: 6px 10px;
+    margin-right: 10px;
+  }
+  .modal-overlay {
+    padding: 16px;
+  }
+  .modal {
+    max-height: 92vh;
+  }
+  .modal-footer {
+    padding: 16px 24px;
+  }
+  .stat-number {
+    font-size: 28px;
   }
 }
