@@ -17,7 +17,7 @@ export default function ChatButton() {
     <>
       {showLabel && !isOpen && (
         <div className="chat-label" onClick={() => { setIsOpen(true); setShowLabel(false); }}>
-          <span className="chat-label-text">Hey! Ask my AI anything about me</span>
+          <span className="chat-label-text">Hey! Ask Luffy anything about me</span>
           <svg className="chat-label-arrow" width="50" height="40" viewBox="0 0 50 40" fill="none">
             <path d="M4 4 Q12 32 40 28" stroke="var(--color-accent)" strokeWidth="2.5" strokeLinecap="round" fill="none" strokeDasharray="4 3"/>
             <path d="M34 22 L41 29 L32 31" stroke="var(--color-accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
