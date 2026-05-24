@@ -124,19 +124,19 @@ export const projects: Project[] = [
     id: "admin-cockpit",
     name: "Enterprise Admin Cockpit",
     description:
-      "Enterprise administration and operational management system with workflow governance, monitoring dashboards, and data-driven decision tools.",
+      "Self-service operational tooling for 20 platform admins — enabling independent debugging across SDC environments with temporary access provisioning, health checks, and billing retrieval.",
     tags: ["React.js", "TypeScript", "REST APIs", "Azure"],
     isFeatured: false,
     modal: {
       badge: "Enterprise Project",
       problem:
-        "Enterprise operations lacked a unified view for managing workflows, monitoring system health, and making data-driven decisions. Administrators relied on fragmented tools and manual processes to govern business operations across multiple teams and services.",
+        "Platform admins had no self-service way to debug customer issues across SDC environments. Every investigation required support team escalation, creating bottlenecks that stretched debugging turnaround from hours to days.",
       approach:
-        "Built a centralized administration and operational management platform with workflow governance capabilities, real-time monitoring dashboards, and data-driven decision tools. Designed modular UI components with role-based access control and integrated REST APIs for cross-system data aggregation.",
+        "Designed and developed 4 REST APIs covering temporary access provisioning, owner/deputy management, Snowflake project health checks, and billing retrieval. Built a React.js + TypeScript admin portal with role-based access control, enabling 20 admins to independently diagnose and resolve issues without escalation.",
       impactMetrics: [
-        { value: "RBAC", label: "Role-based access control" },
-        { value: "Real-time", label: "Monitoring dashboards" },
-        { value: "Modular", label: "Component architecture" },
+        { value: "20", label: "Platform admins enabled" },
+        { value: "4", label: "REST APIs built" },
+        { value: "Hrs → Min", label: "Debug turnaround" },
       ],
       techStack: [
         "React.js",
@@ -151,19 +151,19 @@ export const projects: Project[] = [
     id: "cms-platform",
     name: "SDC Cloud CMS Platform",
     description:
-      "Content management and self-service publishing platform for Siemens' Data & AI ecosystem — onboarding services like Siemens GPT, Snowflake, and LLM Gateway.",
+      "Content management and self-service publishing platform serving 60,000+ end users — powering service onboarding for Siemens GPT, Snowflake, and LLM Gateway.",
     tags: ["React.js", "Node.js", "MongoDB", "Express.js"],
     isFeatured: false,
     modal: {
       badge: "Enterprise Project",
       problem:
-        "Siemens' Data & AI ecosystem needed a centralized content management and self-service publishing platform to onboard and manage services like Siemens GPT, Snowflake, and LLM Gateway. Existing processes for service onboarding were manual and inconsistent across teams.",
+        "Siemens' Data & AI ecosystem needed a centralized platform to onboard and manage services like Siemens GPT, Snowflake, and LLM Gateway. Service onboarding was manual and inconsistent — no unified catalog, no approval workflows, and no self-service publishing for service teams.",
       approach:
-        "Developed a full-stack content management system with self-service publishing workflows, enabling service teams to onboard, document, and manage their offerings independently. Built with a MERN stack architecture, featuring rich content editing, approval workflows, and service catalog management.",
+        "Developed a full-stack CMS with self-service publishing workflows on a MERN stack architecture. Built a no-code drag-and-drop agent builder interface supporting 50–70 operators, rich content editing with approval workflows, and a service catalog enabling teams to independently onboard and manage their offerings.",
       impactMetrics: [
-        { value: "Self-serve", label: "Service onboarding" },
-        { value: "CMS", label: "Content management" },
-        { value: "Catalog", label: "Service discovery" },
+        { value: "60,000+", label: "End users served" },
+        { value: "30,000+", label: "Platform users" },
+        { value: "50–70", label: "Active operators" },
       ],
       techStack: [
         "React.js",
@@ -176,21 +176,21 @@ export const projects: Project[] = [
   },
   {
     id: "shubhjyotish",
-    name: "ShubhJyotish Service Platform",
+    name: "ShubhJyotish — Vedic Astrology Platform",
     description:
-      "Production-grade full-stack service platform with user interaction workflows, service management, and end-to-end lifecycle ownership.",
-    tags: ["React.js", "Node.js", "MongoDB", "REST APIs"],
+      "Full-stack service marketplace for Vedic astrology and numerology — featuring real-time booking, secure payments, user dashboards, and an admin management console.",
+    tags: ["React.js", "Node.js", "MongoDB", "JWT Auth"],
     isFeatured: false,
     modal: {
       badge: "Personal Project",
       problem:
-        "Needed a production-grade platform to manage service bookings, user interactions, and end-to-end service lifecycle — from discovery to fulfillment — with a clean, reliable user experience.",
+        "Traditional astrology and numerology services relied on fragmented communication channels — phone calls, WhatsApp, and manual scheduling — with no unified platform for discovery, booking, payment processing, or consultation tracking.",
       approach:
-        "Built a full-stack service platform from scratch with user authentication, service catalog, booking workflows, and admin management. Designed RESTful APIs with Node.js and Express, a responsive React frontend, and MongoDB for flexible data modeling.",
+        "Engineered a production-grade service marketplace from the ground up with a React.js frontend, Node.js/Express backend, and MongoDB database. Implemented end-to-end user flows including JWT-authenticated accounts, service catalog with filtering, real-time booking engine, and a dedicated admin console for service and order management.",
       impactMetrics: [
-        { value: "Full-stack", label: "End-to-end ownership" },
-        { value: "Auth", label: "User authentication" },
-        { value: "Live", label: "Production deployed" },
+        { value: "6+", label: "RESTful API endpoints" },
+        { value: "JWT", label: "Secure authentication" },
+        { value: "Live", label: "Production on Vercel" },
       ],
       techStack: [
         "React.js",
