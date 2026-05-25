@@ -1,9 +1,50 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { personalInfo, aboutContent, experience, projects, skillCategories, contactLinks } from "@/lib/data";
+import Groq from "groq-sdk";
+import {
+  personalInfo,
+  aboutContent,
+  experience,
+  projects,
+  skillCategories,
+  contactLinks,
+} from "@/lib/data";
 import { NextRequest } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// --- Groq client ---
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "" });
 
+// --- Per-IP rate limiting (10 requests per 60s window) ---
+const RATE_LIMIT_WINDOW = 60_000;
+const MAX_REQUESTS_PER_WINDOW = 10;
+const ipRequests = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipRequests.get(ip);
+
+  if (!entry || now > entry.resetAt) {
+    ipRequests.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (entry.count >= MAX_REQUESTS_PER_WINDOW) return false;
+  entry.count++;
+  return true;
+}
+
+// --- Response cache for first messages (30 min TTL) ---
+const CACHE_TTL = 30 * 60_000;
+const MAX_CACHE_SIZE = 100;
+const responseCache = new Map<string, { text: string; cachedAt: number }>();
+
+function normalizeQuestion(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// --- Resume data ---
 const RESUME_DATA = `
 LOCATION: Bengaluru, India
 EMAIL: prabhav.setia21@gmail.com
@@ -73,33 +114,50 @@ Bachelor of Technology in Computer Science (IoT Specialization)
 Chandigarh University, Mohali, Punjab, India | Jun 2019 – Jun 2023
 `;
 
+// --- System prompt builder ---
 function buildSystemPrompt(): string {
   const info = `Name: ${personalInfo.name}\nRoles: ${personalInfo.roles.join(", ")}`;
   const about = aboutContent.paragraphs.join("\n");
-  const stats = aboutContent.stats.map(s => `${s.number} — ${s.label}`).join("\n");
+  const stats = aboutContent.stats
+    .map((s) => `${s.number} — ${s.label}`)
+    .join("\n");
 
-  const exp = experience.map(e =>
-    `${e.role} at ${e.company} (${e.dateRange})${e.isCurrent ? " [CURRENT]" : ""}\n${e.highlights.map(h => `  - ${h}`).join("\n")}`
-  ).join("\n\n");
+  const exp = experience
+    .map(
+      (e) =>
+        `${e.role} at ${e.company} (${e.dateRange})${e.isCurrent ? " [CURRENT]" : ""}\n${e.highlights.map((h) => `  - ${h}`).join("\n")}`
+    )
+    .join("\n\n");
 
-  const proj = projects.map(p =>
-    `${p.name}${p.isFeatured ? " [FEATURED]" : ""}: ${p.description}\nTags: ${p.tags.join(", ")}\n${p.modal.problem}\n${p.modal.approach}`
-  ).join("\n\n");
+  const proj = projects
+    .map(
+      (p) =>
+        `${p.name}${p.isFeatured ? " [FEATURED]" : ""}: ${p.description}\nTags: ${p.tags.join(", ")}\n${p.modal.problem}\n${p.modal.approach}`
+    )
+    .join("\n\n");
 
-  const skills = skillCategories.map(c =>
-    `${c.name}: ${c.items.join(", ")}`
-  ).join("\n");
+  const skills = skillCategories
+    .map((c) => `${c.name}: ${c.items.join(", ")}`)
+    .join("\n");
 
-  const contact = contactLinks.map(c => `${c.label}: ${c.href}`).join("\n");
+  const contact = contactLinks.map((c) => `${c.label}: ${c.href}`).join("\n");
 
   const now = new Date();
-  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ];
   const currentDate = `${months[now.getMonth()]} ${now.getFullYear()}`;
   const careerStart = new Date(2023, 8); // Sep 2023
-  const totalMonths = (now.getFullYear() - careerStart.getFullYear()) * 12 + (now.getMonth() - careerStart.getMonth());
+  const totalMonths =
+    (now.getFullYear() - careerStart.getFullYear()) * 12 +
+    (now.getMonth() - careerStart.getMonth());
   const years = Math.floor(totalMonths / 12);
   const remainingMonths = totalMonths % 12;
-  const exactExp = remainingMonths > 0 ? `${years} years and ${remainingMonths} months` : `${years} years`;
+  const exactExp =
+    remainingMonths > 0
+      ? `${years} years and ${remainingMonths} months`
+      : `${years} years`;
 
   return `You are Prabhav's AI assistant embedded in his portfolio website. You represent him to visitors — recruiters, hiring managers, fellow engineers, and curious people.
 
@@ -119,9 +177,9 @@ TODAY'S DATE: ${currentDate}
 
 6. **Be conversational and confident.** You're representing a talented engineer. Be warm, direct, and professional. First person when quoting Prabhav's perspective ("He built...", "His work involves...").
 
-7. **General questions are fine.** You can answer general knowledge questions too. Be helpful and accurate. If a general question can naturally connect to Prabhav's skills, mention it briefly.
+7. **Prioritize Prabhav's profile, but answer general questions too.** Your primary job is to showcase Prabhav — his skills, experience, projects, and achievements. Always try to relate answers back to him when relevant. However, if someone asks a general knowledge question (tech, coding, science, etc.), answer it helpfully and briefly, then connect it back to Prabhav's work if possible. For example, if asked "what is RAG?", explain it and mention that Prabhav built RAG pipelines at Accenture.
 
-8. **For off-topic or inappropriate questions,** redirect politely: "I'm here to help with questions about Prabhav's work and background. Feel free to ask about his experience, projects, or skills!"
+8. **Only redirect for truly inappropriate content** (harassment, illegal activity, etc.). Normal questions that aren't about Prabhav should still get a helpful answer — but keep it concise and steer the conversation back to Prabhav's profile when you can.
 
 ## PRABHAV'S COMPLETE PROFILE:
 
@@ -164,44 +222,95 @@ ${RESUME_DATA}
 `;
 }
 
+// --- API handler ---
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    // Rate limit by IP
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      req.headers.get("x-real-ip") ||
+      "unknown";
 
-    if (!process.env.GEMINI_API_KEY) {
-      return Response.json({ error: "API key not configured" }, { status: 500 });
+    if (!checkRateLimit(ip)) {
+      return Response.json(
+        { error: "Too many requests. Please wait a moment and try again." },
+        { status: 429 }
+      );
     }
 
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      generationConfig: {
-        temperature: 0.3,
-      },
-    });
+    const { messages } = await req.json();
 
-    const chat = model.startChat({
-      history: [
-        { role: "user", parts: [{ text: buildSystemPrompt() }] },
-        { role: "model", parts: [{ text: "Got it. I'm Prabhav's portfolio assistant. I'll answer accurately using only his verified data — no fabrication. I can also help with general questions. Ready to chat!" }] },
-        ...messages.slice(0, -1).map((m: { role: string; content: string }) => ({
-          role: m.role === "user" ? "user" : "model",
-          parts: [{ text: m.content }],
-        })),
-      ],
-    });
+    if (!process.env.GROQ_API_KEY) {
+      return Response.json(
+        { error: "API key not configured" },
+        { status: 500 }
+      );
+    }
 
+    // Check cache for single-turn questions
     const lastMessage = messages[messages.length - 1].content;
-    const result = await chat.sendMessageStream(lastMessage);
+    const cacheKey = normalizeQuestion(lastMessage);
+
+    if (messages.length === 1) {
+      const cached = responseCache.get(cacheKey);
+      if (cached && Date.now() - cached.cachedAt < CACHE_TTL) {
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(encoder.encode(cached.text));
+            controller.close();
+          },
+        });
+        return new Response(stream, {
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        });
+      }
+    }
+
+    // Build messages array for Groq
+    const groqMessages: Groq.Chat.ChatCompletionMessageParam[] = [
+      { role: "system", content: buildSystemPrompt() },
+      ...messages.map((m: { role: string; content: string }) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+    ];
+
+    // Stream response from Groq
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: groqMessages,
+      temperature: 0.3,
+      max_tokens: 1024,
+      stream: true,
+    });
 
     const encoder = new TextEncoder();
+    let fullResponse = "";
+    const shouldCache = messages.length === 1;
+
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of result.stream) {
-          const text = chunk.text();
+        for await (const chunk of completion) {
+          const text = chunk.choices[0]?.delta?.content || "";
           if (text) {
+            fullResponse += text;
             controller.enqueue(encoder.encode(text));
           }
         }
+
+        // Cache first-turn responses
+        if (shouldCache && fullResponse) {
+          if (responseCache.size >= MAX_CACHE_SIZE) {
+            const oldest = responseCache.keys().next().value;
+            if (oldest) responseCache.delete(oldest);
+          }
+          responseCache.set(cacheKey, {
+            text: fullResponse,
+            cachedAt: Date.now(),
+          });
+        }
+
         controller.close();
       },
     });
@@ -211,6 +320,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error("Chat API error:", err);
-    return Response.json({ error: "Failed to generate response" }, { status: 500 });
+    return Response.json(
+      { error: "Failed to generate response" },
+      { status: 500 }
+    );
   }
 }
